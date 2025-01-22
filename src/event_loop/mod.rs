@@ -40,15 +40,18 @@ struct EventLoop<T> {
     current_task: TaskNode<T>,
 }
 
-fn event_loop_get_next_task_to_run<T>(mut el: EventLoop<T>) -> TaskNode<T> {
-    let task = el.task_array_head.unwrap();
-    // if let Some(tah) = el.task_array_head {
-    //     task = tah;
-    // }
-    el.task_array_head = Some(task.borrow_mut().right.clone()?);
+fn event_loop_get_next_task_to_run<T>(mut el: EventLoop<T>) -> Result<TaskNode<T>, String> {
+    let task;
+    if let Some(tah) = el.task_array_head {
+        task = tah.clone();
+    } else {
+        return Err(format!("Error <src/event_loop/mod.rs{}: unable to assign task from task_array_head", line!()));
+    }
+
+    el.task_array_head = (*task).borrow_mut().right.clone();
 
     task.borrow_mut().left = None;
     task.borrow_mut().right = None;
 
-    Some(task)
+    Ok(Some(task))
 }
