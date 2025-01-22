@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Mutex, Condvar};
+use std::sync::{Condvar, Mutex};
 // use std::thread;
 
 type TaskNode<T> = Option<Rc<RefCell<Task<T>>>>;
@@ -45,10 +45,13 @@ fn event_loop_get_next_task_to_run<T>(mut el: EventLoop<T>) -> Result<TaskNode<T
     if let Some(tah) = el.task_array_head {
         task = tah.clone();
     } else {
-        return Err(format!("Error <src/event_loop/mod.rs{}: unable to assign task from task_array_head", line!()));
+        return Err(format!(
+            "Error <src/event_loop/mod.rs{}: unable to assign task from task_array_head",
+            line!()
+        ));
     }
 
-    el.task_array_head = (*task).borrow_mut().right.clone();
+    el.task_array_head = (*task).borrow().right.clone();
 
     task.borrow_mut().left = None;
     task.borrow_mut().right = None;
