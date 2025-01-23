@@ -1,7 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Condvar, Mutex};
-// use std::thread;
+use std::sync::{Arc, Condvar, Mutex};
+use std::thread;
+use std::time::Duration;
 
 type TaskNode<T> = Option<Rc<RefCell<Task<T>>>>;
 
@@ -25,13 +26,13 @@ struct EventLoop<T> {
         operation in task array. Also used to update event loop
         attributes in mutual exclusive way
     */
-    ev_loop_mutex: Mutex<T>,
+    ev_loop_mutex: Arc<Mutex<u8>>,
 
     // state of event loop
     ev_loop_state: EVLoopState,
 
     // CV to suspended event loop thread
-    ev_loop_cv: Condvar,
+    ev_loop_cv: Arc<Condvar>,
 
     /*
         Current task which event loop thread is executing
@@ -57,4 +58,20 @@ fn event_loop_get_next_task_to_run<T>(mut el: EventLoop<T>) -> Result<TaskNode<T
     task.borrow_mut().right = None;
 
     Ok(Some(task))
+}
+
+fn event_loop_thread<T>(arg: Rc<RefCell<EventLoop<T>>>) {
+    let el: Rc<RefCell<EventLoop<T>>> = arg;
+
+    loop {
+        thread::sleep(Duration::from_secs(2));
+    }
+}
+
+fn event_loop_init<T>(el: Rc<RefCell<EventLoop<T>>>) {
+    el.borrow_mut().task_array_head = None;
+    el.borrow_mut().ev_loop_mutex = Arc::new(Mutex::new(0));
+    el.borrow_mut().ev_loop_state = EVLoopState::EVLoopIdle;
+    el.borrow_mut().ev_loop_cv = Arc::new(Condvar::new());
+    el.borrow_mut().current_task = None;
 }
