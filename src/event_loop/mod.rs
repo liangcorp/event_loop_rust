@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{Arc, Condvar, Mutex, mpsc};
 use std::thread;
 use std::time::Duration;
 
@@ -18,7 +18,7 @@ enum EVLoopState {
     EVLoopBusy,
 }
 
-struct EventLoop<T> {
+pub struct EventLoop<T> {
     // head to the start of the task array
     task_array_head: TaskNode<T>,
     /*
@@ -68,16 +68,17 @@ fn event_loop_thread<T>(arg: Rc<RefCell<EventLoop<T>>>) {
     }
 }
 
-fn event_loop_init<T>(el: Rc<RefCell<EventLoop<T>>>) {
-    el.borrow_mut().task_array_head = None;
-    el.borrow_mut().ev_loop_mutex = Arc::new(Mutex::new(0));
-    el.borrow_mut().ev_loop_state = EVLoopState::EVLoopIdle;
-    el.borrow_mut().ev_loop_cv = Arc::new(Condvar::new());
-    el.borrow_mut().current_task = None;
+pub fn event_loop_init<T>() -> EventLoop<T> {
+    EventLoop {
+        task_array_head: None,
+        ev_loop_mutex: Arc::new(Mutex::new(0)),
+        ev_loop_state: EVLoopState::EVLoopIdle,
+        ev_loop_cv: Arc::new(Condvar::new()),
+        current_task: None,
+    }
 }
 
-fn event_loop_run<T>(el: Rc<RefCell<EventLoop<T>>>) {
+pub fn event_loop_run<T>(el: Rc<RefCell<EventLoop<T>>>) {
     thread::spawn (||{
-
     });
 }
