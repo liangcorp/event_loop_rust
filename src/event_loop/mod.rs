@@ -75,3 +75,9 @@ fn event_loop_init<T>(el: Rc<RefCell<EventLoop<T>>>) {
     el.borrow_mut().ev_loop_cv = Arc::new(Condvar::new());
     el.borrow_mut().current_task = None;
 }
+
+fn event_loop_run<T>(el: Rc<RefCell<EventLoop<T>>>) {
+    thread::spawn (||{
+
+    });
+}
