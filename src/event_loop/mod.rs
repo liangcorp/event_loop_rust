@@ -68,14 +68,14 @@ fn event_loop_thread<T>(arg: Rc<RefCell<EventLoop<T>>>) {
     }
 }
 
-pub fn event_loop_init<T>() -> EventLoop<T> {
-    EventLoop {
+pub fn event_loop_init<T>() -> Box<EventLoop<T>> {
+    Box::new(EventLoop {
         task_array_head: None,
         ev_loop_mutex: Arc::new(Mutex::new(0)),
         ev_loop_state: EVLoopState::EVLoopIdle,
         ev_loop_cv: Arc::new(Condvar::new()),
         current_task: None,
-    }
+    })
 }
 
 pub fn event_loop_run<T>(el: Rc<RefCell<EventLoop<T>>>) {
